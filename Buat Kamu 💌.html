@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Buat Kamu 💌</title>
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#fff3ec;--card:#fffaf6;--ink:#5a3a3a;--soft:#a77b7b;--pink:#f7b2bd;--peach:#ffd3b6;--accent:#e8788a;--line:#f2d5cc;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#2b1f22;--card:#38282c;--ink:#ffe9e2;--soft:#d4a6a6;--pink:#b8566a;--peach:#8a5a48;--accent:#ff9bab;--line:#55383d;color-scheme:dark}}
+*{box-sizing:border-box}
+html{height:100%}
+body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-family:'Quicksand',system-ui,sans-serif;display:flex;justify-content:center;align-items:flex-start;padding:20px 16px 40px;overflow-x:hidden}
+.wrap{width:100%;max-width:440px;text-align:center}
+.card{background:var(--card);border:2px solid var(--line);border-radius:28px;padding:26px 20px;box-shadow:0 10px 30px rgba(232,120,138,.15);margin-top:14px;animation:in .5s}
+@keyframes in{from{opacity:0;transform:translateY(14px)}}
+.mascot{font-size:72px;display:inline-block;animation:bob 2.4s ease-in-out infinite}
+.mascot.shake{animation:shake .5s}
+@keyframes bob{50%{transform:translateY(-8px)}}
+@keyframes shake{25%{transform:translateX(-12px) rotate(-8deg)}75%{transform:translateX(12px) rotate(8deg)}}
+h1{font-size:22px;margin:8px 0}
+p{line-height:1.55;margin:8px 0}
+.small{color:var(--soft);font-size:14px}
+input{width:100%;font:inherit;font-size:18px;text-align:center;padding:13px;border-radius:16px;border:2px solid var(--line);background:var(--bg);color:var(--ink);margin:12px 0;outline:none}
+input:focus{border-color:var(--accent)}
+button{font:inherit;font-weight:700;font-size:16px;border:0;border-radius:999px;padding:13px 26px;background:var(--accent);color:#fff;cursor:pointer;margin:6px 4px;transition:transform .15s}
+button:active{transform:scale(.95)}
+button.ghost{background:var(--peach);color:var(--ink)}
+.msg{min-height:24px;color:var(--accent);font-weight:700}
+.slots{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:14px 0}
+.slot{width:32px;height:40px;border-bottom:3px solid var(--accent);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;border-radius:6px 6px 0 0;background:var(--bg)}
+.slot.gap{border:0;background:none;width:14px}
+.secret{font-size:20px;letter-spacing:3px;font-weight:700;margin-bottom:6px;color:var(--accent);word-break:break-word}
+.secret span.on{animation:pop .6s}
+@keyframes pop{0%{transform:scale(.3)}60%{transform:scale(1.4)}}
+.lvl{display:inline-block;background:var(--peach);color:var(--ink);border-radius:999px;padding:4px 14px;font-size:13px;font-weight:700}
+.ov{position:fixed;inset:0;background:rgba(60,30,35,.5);display:flex;align-items:center;justify-content:center;padding:20px;z-index:20}
+.ov .card{max-width:340px;margin:0}
+.fall{position:fixed;top:-30px;font-size:24px;animation:fall linear forwards;pointer-events:none;z-index:30}
+@keyframes fall{to{transform:translateY(110vh) rotate(360deg)}}
+.letter{text-align:left;font-size:16px;line-height:1.75;white-space:pre-line}
+.big{font-size:34px;font-weight:700;color:var(--accent);margin:6px 0 14px}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<script>
+// ====== PENGATURAN (ubah di sini) ======
+var PET = ["monyet"]; // jawaban hewan huruf M — GANTI kalau beda
+var LEVELS = [
+ {q:"Panggilan Aunty ke lu apa? 😏", ans:"JEDUTITIL", start:0, part:"I", ok:function(n){return n.indexOf("jedutitil")>-1}},
+ {q:"Pas di pondok dulu, lu sama Wildani pernah sama-sama pengen punya hewan peliharaan apa? Huruf depannya M 🐾", ans:PET[0].toUpperCase(), start:1, part:"LOVE", ok:function(n){return PET.some(function(p){return n.indexOf(p)>-1})}},
+ {q:"Kelas berapa gw botak sampai lu malingin muka? 🙈", ans:"KELAS SEBELAS", start:0, part:"U", ok:function(n){return /sebelas|11|xi/.test(n)}},
+ {q:"Transportasi apa yang paling sering kita naikin pas pacaran? 🚆", ans:"KRL", start:0, part:"ALWAYS", ok:function(n){return /krl|kereta|commuter|listrik/.test(n)}}
+];
+var PARTS = ["I","LOVE","U","ALWAYS"];
+var LETTER = "Gw ga tau udah keberapa puluh kali, ratus kali, wajah lu selalu gw inget. Meskipun gw ga pernah mau coba inget, tapi selalu dateng ke mimpi gw. Kehadiran lu bener-bener jelas, nyata, sampe gw ga sadar kalo kita udah sejauh ini.\n\nGw mungkin emang bukan yang terbaik buat lu, tapi dalam waktu dekat ini, gw mau ketemu sama lu buat ngeluapin rasa kangen gw. Gw bener-bener ga bisa mendeskripsikan perasaan gw, dan gw ya masih sayang sama lu. Gw tau ini agak jahat juga di satu sisi, karna lu juga udah sama yang lain.";
+// ========================================
+var app=document.getElementById("app"), cur=0, rev=0, done=[];
+function norm(s){return s.toLowerCase().replace(/[^a-z0-9]/g,"")}
+function confetti(){var e=["🎉","💖","✨","🌸","🎈","💌"];for(var i=0;i<28;i++){var s=document.createElement("div");s.className="fall";s.textContent=e[i%e.length];s.style.left=Math.random()*100+"vw";s.style.animationDuration=(2+Math.random()*2)+"s";s.style.animationDelay=Math.random()*.6+"s";document.body.appendChild(s);setTimeout(function(x){x.remove()},5000,s)}}
+function pop(emoji,title,text,btn,cb){var o=document.createElement("div");o.className="ov";o.innerHTML='<div class="card"><div class="mascot">'+emoji+'</div><h1>'+title+'</h1><p>'+text+'</p><button>'+btn+'</button></div>';o.querySelector("button").onclick=function(){o.remove();cb&&cb()};document.body.appendChild(o)}
+
+function gate(){
+ app.innerHTML='<div class="card"><div class="mascot" id="m">🐻</div><h1>Eh? Ada yang dateng nih. test dulu yaa.. buat mastiin lu orangnya apa bukan..</h1><p class="small">Kata-kata "keramat" kita di setiap akhir percakapan sebelum tidur 🌙</p><input id="pin" placeholder="ketik di sini" autocomplete="off" autocapitalize="off"><div class="msg" id="gm"></div><button id="go">Masuk</button></div>';
+ var inp=document.getElementById("pin");
+ function check(){
+  if(norm(inp.value).indexOf("aily")>-1){confetti();document.getElementById("gm").textContent="Yeay, ketemu! 🎉";setTimeout(function(){pop("🥰","Bener banget!","Ayo gw ajak main-main dulu ya, ada beberapa tebakan kenangan buat lu.", "Mulai", startLevel)},500)}
+  else{var m=document.getElementById("m");m.classList.remove("shake");void m.offsetWidth;m.classList.add("shake");m.textContent="😤";document.getElementById("gm").textContent="Eitss... Hayooo lu bukan orangnya ya? Cabut dehh kalo bukan orangnya!"}
+ }
+ document.getElementById("go").onclick=check;
+ inp.onkeydown=function(e){if(e.key==="Enter")check()};
+}
+function secretLine(){
+ return PARTS.map(function(p,i){return done[i]?'<span class="on">'+p+'</span>':p.replace(/./g,"_")}).join(" ")
+}
+function slots(L){
+ var k=0;return L.ans.split("").map(function(c){
+  if(c===" ")return '<div class="slot gap"></div>';
+  var s='<div class="slot">'+(k<rev?c:"")+'</div>';k++;return s}).join("")
+}
+function game(){
+ var L=LEVELS[cur];
+ app.innerHTML='<div class="secret">'+secretLine()+'</div><div class="card"><span class="lvl">Level '+(cur+1)+' / '+LEVELS.length+'</span><div class="mascot" style="font-size:48px">🐣</div><p><b>'+L.q+'</b></p><div class="slots">'+slots(L)+'</div><input id="a" placeholder="jawabanmu..." autocomplete="off"><div class="msg" id="gm"></div><button id="go">Tebak</button></div>';
+ var inp=document.getElementById("a");inp.focus&&setTimeout(function(){inp.focus()},100);
+ document.getElementById("go").onclick=function(){guess(inp.value)};
+ inp.onkeydown=function(e){if(e.key==="Enter")guess(inp.value)};
+}
+function startLevel(){rev=LEVELS[cur].start;game()}
+function win(auto){
+ done[cur]=true;confetti();
+ var L=LEVELS[cur],last=cur===LEVELS.length-1;
+ function after(){cur++;if(last){finale()}else{startLevel()}}
+ if(auto){pop("😜","Yahh gembell luu","Sampe semua hurufnya kebuka juga... yaudah deh, dikasih lolos. Jawabannya: <b>"+L.ans+"</b>","Lanjut",after)}
+ else{pop("🎈","Bener!","Satu potongan pesan rahasia kebuka: <b>"+L.part+"</b>","Lanjut",after)}
+ game();
+}
+function guess(v){
+ var L=LEVELS[cur];
+ if(L.ok(norm(v))){win(false);return}
+ var total=L.ans.replace(/ /g,"").length;
+ rev++;
+ if(rev>=total){win(true);return}
+ game();
+ document.getElementById("gm").textContent="Belum bener... dikasih 1 huruf deh 😝";
+}
+function finale(){
+ app.innerHTML='<div class="card"><div class="mascot">💌</div><p class="small">Pesan rahasianya ternyata...</p><div class="big">I LOVE U ALWAYS 🤍</div><div class="letter">'+LETTER+'</div><p><b>Mau ketemu, ngopi bareng? ☕</b></p><div id="btns"><button id="yes">Boleh, ngopi bareng ☕</button><button class="ghost" id="no">Enggak dulu deh</button></div></div>';
+ confetti();
+ var tries=0;
+ document.getElementById("yes").onclick=function(){confetti();document.getElementById("btns").innerHTML='<div class="big">Yeay! 🥹</div><p>Makasih udah mau main sampai habis. Kabarin gw ya kapan kamu bisa 🤍</p><a href="https://wa.me/6285713347459?text=Aku%20udah%20selesai%20main%20gamenya%20%F0%9F%A5%B9%20Boleh%20ngopi%20bareng%20%E2%98%95" target="_blank" rel="noopener" style="display:inline-block;text-decoration:none;font-weight:700;border-radius:999px;padding:13px 26px;background:var(--accent);color:#fff">Chat gw di WhatsApp 💬</a>'};
+ var no=document.getElementById("no");
+ no.onclick=function(){
+  tries++;
+  if(tries===1){no.textContent="Hmm, yakin? ";no.style.transform="rotate(-4deg)"}
+  else{document.getElementById("btns").innerHTML='<p>Gapapa, makasih udah mau main sampai habis 🙂🤍</p><p class="small">Apa pun jawabanmu, gw tetap menghargai kamu.</p>'}
+ };
+}
+gate();
+</script>
+</body>
+</html>
